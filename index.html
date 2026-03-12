@@ -3,125 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Relatórios - Elétrica Pesada</title>
+    <title>Sistema Elétrica Pesada</title>
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
+<body class="dark-theme" id="body">
 
-    <div class="main-container">
+    <main class="main-container">
         <header>
-            <h1>⚡ Elétrica Pesada</h1>
-            <p>Relatório de Manutenção</p>
+            <div class="header-top">
+                <div class="logo">
+                    <i data-lucide="zap" class="icon-accent"></i>
+                    <h1>Elétrica Pesada</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="btnTheme" class="btn-theme" aria-label="Mudar tema">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <button id="btnLogout" class="btn-theme" aria-label="Sair">
+                        <i data-lucide="log-out"></i>
+                    </button>
+                </div>
+            </div>
+            <p class="subtitle">Relatório de Manutenção</p>
         </header>
 
         <section class="form-section">
+            <input type="hidden" id="edit-id">
+
             <div class="input-group">
-                <label for="placa">Placa ou Prefixo da Máquina</label>
-                <input type="text" id="placa" placeholder="Ex: ABC-1234 / Trator Case 220">
+                <label for="placa"><i data-lucide="truck"></i> Placa ou Prefixo</label>
+                <input type="text" id="placa" placeholder="Ex: ABC-1234 / Trator 7500">
             </div>
 
             <div class="input-group">
-                <label for="servico">Descrição do Serviço Realizado</label>
-                <textarea id="servico" rows="4" placeholder="O que foi feito no veículo?"></textarea>
+                <label for="servico"><i data-lucide="wrench"></i> Serviço Realizado</label>
+                <textarea id="servico" rows="3" placeholder="Descreva o que foi consertado..."></textarea>
             </div>
 
             <div class="input-group">
-                <label for="pecas">Peças e Materiais</label>
-                <textarea id="pecas" rows="3" placeholder="Quais peças foram trocadas?"></textarea>
+                <label for="pecas"><i data-lucide="package"></i> Peças Utilizadas</label>
+                <textarea id="pecas" rows="2" placeholder="Ex: 1x Alternador 24v, 2m cabo 10mm"></textarea>
             </div>
 
             <div class="input-group">
-                <label for="notas">Observações / Notas Adicionais</label>
-                <textarea id="notas" rows="2" placeholder="Algo específico para a empresa saber?"></textarea>
+                <label for="notas"><i data-lucide="sticky-note"></i> Notas Específicas</label>
+                <textarea id="notas" rows="2" placeholder="Observações para a empresa..."></textarea>
             </div>
 
             <div class="actions">
-                <button class="btn-save" onclick="salvarRelatorio()">💾 Salvar no Histórico</button>
-                <button class="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF do Serviço</button>
+                <button id="btnSave" class="btn-save">
+                    <i data-lucide="save"></i> <span>Salvar Relatório</span>
+                </button>
+                <button id="btnCancelEdit" class="btn-pdf" style="display: none;">
+                    <i data-lucide="x"></i> Cancelar Edição
+                </button>
             </div>
         </section>
-
-        <hr>
 
         <section class="history-section">
-            <h2>Últimos Serviços Registrados</h2>
-            <div id="lista-historico">
-                <p class="empty-msg">Nenhum registro encontrado.</p>
+            <div class="history-header">
+                <h2><i data-lucide="history"></i> Histórico Recente</h2>
+                <button id="btnRefresh" class="btn-refresh" title="Atualizar lista">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
+            </div>
+
+            <div class="filters-container">
+                <div class="filter-group">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="searchPlaca" placeholder="Buscar placa...">
+                </div>
+                <div class="filter-group">
+                    <input type="date" id="filterData" title="Filtrar por data">
+                </div>
+                <button id="btnClearFilters" class="btn-clear" title="Limpar Filtros">
+                    <i data-lucide="x-circle"></i>
+                </button>
+            </div>
+
+            <div class="bulk-actions-wrapper">
+                <div id="bulkActions" class="bulk-actions">
+                    <label class="select-all-wrap" title="Selecionar Todos">
+                        <input type="checkbox" id="checkSelectAll" class="card-checkbox">
+                        <span id="selectedCount">0 selecionados</span>
+                    </label>
+                    
+                    <div id="bulkButtons" class="bulk-buttons">
+                        <button id="btnBulkEdit" title="Editar (Apenas 1)"><i data-lucide="edit"></i> Editar</button>
+                        <button id="btnBulkPdf" title="Gerar PDF"><i data-lucide="file-down"></i> PDF</button>
+                        <button id="btnBulkDelete" class="btn-danger" title="Excluir"><i data-lucide="trash-2"></i> Excluir</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="lista-historico" class="lista-historico">
+                <p class="loading-text">Carregando dados do servidor...</p>
             </div>
         </section>
+    </main>
+
+    <div id="customModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h3 id="modalTitle">Título</h3>
+            <p id="modalMessage">Mensagem do modal aqui.</p>
+            <div class="modal-buttons">
+                <button id="modalBtnCancel" class="btn-pdf">Cancelar</button>
+                <button id="modalBtnConfirm" class="btn-save">Confirmar</button>
+            </div>
+        </div>
     </div>
 
-    <script>
-        function salvarRelatorio() {
-            const relatorio = {
-                placa: document.getElementById('placa').value,
-                servico: document.getElementById('servico').value,
-                pecas: document.getElementById('pecas').value,
-                notas: document.getElementById('notas').value,
-                data: new Date().toLocaleString('pt-BR')
-            };
-
-            if(!relatorio.placa) {
-                alert("Por favor, preencha pelo menos a placa ou prefixo.");
-                return;
-            }
-
-            let banco = JSON.parse(localStorage.getItem('servicos_eletrica') || "[]");
-            banco.unshift(relatorio);
-            localStorage.setItem('servicos_eletrica', JSON.stringify(banco));
-            
-            alert("Relatório salvo com sucesso!");
-            renderizarHistorico();
-            limparCampos();
-        }
-
-        function renderizarHistorico() {
-            const container = document.getElementById('lista-historico');
-            let banco = JSON.parse(localStorage.getItem('servicos_eletrica') || "[]");
-            
-            if(banco.length === 0) return;
-
-            container.innerHTML = banco.slice(0, 10).map(item => `
-                <div class="card-historico">
-                    <strong>${item.placa}</strong>
-                    <span>Data: ${item.data}</span>
-                    <p>${item.servico.substring(0, 60)}...</p>
-                </div>
-            `).join('');
-        }
-
-        function limparCampos() {
-            document.getElementById('placa').value = '';
-            document.getElementById('servico').value = '';
-            document.getElementById('pecas').value = '';
-            document.getElementById('notas').value = '';
-        }
-
-        async function gerarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let banco = JSON.parse(localStorage.getItem('servicos_eletrica') || "[]");
-            
-            if(banco.length === 0) {
-                alert("Salve um relatório primeiro para gerar o PDF.");
-                return;
-            }
-            
-            const ultimo = banco[0];
-            doc.setFont("helvetica", "bold");
-            doc.text("RELATÓRIO DE SERVIÇO ELÉTRICO", 20, 20);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Data: ${ultimo.data}`, 20, 35);
-            doc.text(`Veículo/Máquina: ${ultimo.placa}`, 20, 45);
-            doc.text(`Descrição: ${ultimo.servico}`, 20, 55, { maxWidth: 170 });
-            doc.text(`Peças: ${ultimo.pecas}`, 20, 85, { maxWidth: 170 });
-            doc.text(`Notas: ${ultimo.notas}`, 20, 110, { maxWidth: 170 });
-            
-            doc.save(`Servico_${ultimo.placa.replace(/ /g, "_")}.pdf`);
-        }
-
-        renderizarHistorico();
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

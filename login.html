@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso - Elétrica Pesada</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body { align-items: center; }
+        .login-container { text-align: center; max-width: 400px; }
+        .toggle-link { 
+            display: block; 
+            margin-top: 20px; 
+            color: var(--text-accent); 
+            cursor: pointer; 
+            font-size: 0.95rem; 
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .toggle-link:hover { opacity: 0.8; }
+    </style>
+</head>
+<body class="dark-theme" id="body">
+
+    <main class="main-container login-container">
+        <header>
+            <div class="logo" style="justify-content: center;">
+                <i data-lucide="zap" class="icon-accent"></i>
+                <h1>Elétrica Pesada</h1>
+            </div>
+            <p class="subtitle" id="titulo-tela">Acesso ao Sistema</p>
+        </header>
+
+        <section class="form-section" id="box-login">
+            <div class="input-group" style="text-align: left;">
+                <label for="email-login"><i data-lucide="mail"></i> E-mail</label>
+                <input type="email" id="email-login" placeholder="seu@email.com">
+            </div>
+
+            <div class="input-group" style="text-align: left;">
+                <label for="senha-login"><i data-lucide="lock"></i> Senha</label>
+                <input type="password" id="senha-login" placeholder="******">
+            </div>
+
+            <div class="actions" style="grid-template-columns: 1fr; margin-top: 20px;">
+                <button id="btnEntrar" class="btn-save">
+                    <i data-lucide="log-in"></i> Entrar
+                </button>
+            </div>
+            
+            <a class="toggle-link" id="link-ir-registro">Não tem uma conta? Crie aqui.</a>
+            <p id="msg-login" style="margin-top: 15px; font-weight: bold; font-size: 0.9rem; color: var(--text-accent);"></p>
+        </section>
+
+        <section class="form-section" id="box-registro" style="display: none;">
+            <div class="input-group" style="text-align: left;">
+                <label for="email-reg"><i data-lucide="mail"></i> Novo E-mail</label>
+                <input type="email" id="email-reg" placeholder="Crie seu e-mail de acesso">
+            </div>
+
+            <div class="input-group" style="text-align: left;">
+                <label for="senha-reg"><i data-lucide="key"></i> Crie uma Senha</label>
+                <input type="password" id="senha-reg" placeholder="Mínimo de 6 caracteres">
+            </div>
+
+            <div class="actions" style="grid-template-columns: 1fr; margin-top: 20px;">
+                <button id="btnCadastrar" class="btn-pdf">
+                    <i data-lucide="user-plus"></i> Cadastrar e Entrar
+                </button>
+            </div>
+            
+            <a class="toggle-link" id="link-ir-login">Já tem conta? Faça o login.</a>
+            <p id="msg-reg" style="margin-top: 15px; font-weight: bold; font-size: 0.9rem; color: var(--text-accent);"></p>
+        </section>
+
+    </main>
+
+    <script src="login.js"></script>
+</body>
+</html>
